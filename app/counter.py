@@ -1,43 +1,40 @@
 from nicegui import ui, app
-from .models import Counter
 
 def create():
     @ui.page('/')
-    def counter_page():
-        # Initialize counter in user storage (persists across sessions)
+    def page():
+        ui.label('Simple Counter').classes('text-h4 q-mb-md')
+        
+        # Initialize counter value in user storage to persist across sessions
         if 'counter' not in app.storage.user:
-            app.storage.user['counter'] = Counter().model_dump()
+            app.storage.user['counter'] = 0
         
-        counter_data = Counter(**app.storage.user['counter'])
+        # Create the counter display
+        counter_label = ui.label().classes('text-h2 q-mb-md')
         
-        # Create UI elements
-        with ui.column().classes('items-center gap-8 p-8'):
-            ui.label('Simple Counter').classes('text-3xl font-bold text-center')
-            
-            # Counter display
-            count_label = ui.label(str(counter_data.value)).classes('text-6xl font-mono text-center p-4 bg-gray-100 rounded-lg min-w-32').mark('count-display')
-            
-            # Buttons row
-            with ui.row().classes('gap-4'):
-                decrement_btn = ui.button('-', 
-                    color='red'
-                ).classes('text-2xl px-6 py-3').mark('decrement')
-                
-                increment_btn = ui.button('+', 
-                    color='green'
-                ).classes('text-2xl px-6 py-3').mark('increment')
+        def update_display():
+            counter_label.set_text(f'Count: {app.storage.user["counter"]}')
         
         def increment():
-            counter_data.value += 1
-            app.storage.user['counter'] = counter_data.model_dump()
-            count_label.set_text(str(counter_data.value))
-            ui.notify(f'Counter incremented to {counter_data.value}', type='positive')
+            app.storage.user['counter'] += 1
+            update_display()
+            ui.notify(f'Incremented to {app.storage.user["counter"]}', type='positive')
         
         def decrement():
-            counter_data.value -= 1
-            app.storage.user['counter'] = counter_data.model_dump()
-            count_label.set_text(str(counter_data.value))
-            ui.notify(f'Counter decremented to {counter_data.value}', type='info')
+            app.storage.user['counter'] -= 1
+            update_display()
+            ui.notify(f'Decremented to {app.storage.user["counter"]}', type='info')
         
-        increment_btn.on_click(increment)
-        decrement_btn.on_click(decrement)
+        def reset():
+            app.storage.user['counter'] = 0
+            update_display()
+            ui.notify('Counter reset to 0', type='warning')
+        
+        # Initial display update
+        update_display()
+        
+        # Create buttons
+        with ui.row().classes('q-gutter-md'):
+            ui.button('Increment (+1)', on_click=increment, color='positive').classes('q-px-lg')
+            ui.button('Decrement (-1)', on_click=decrement, color='negative').classes('q-px-lg')
+            ui.button('Reset', on_click=reset, color='warning').classes('q-px-lg')

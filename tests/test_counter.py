@@ -1,75 +1,74 @@
 from nicegui.testing import User
-from nicegui import ui
+from nicegui import ui, app
 
 async def test_counter_initial_state(user: User) -> None:
-    """Test that counter starts at 0"""
+    """Test that counter starts at 0 for new users."""
     await user.open('/')
-    
-    # Check that the counter display shows 0 initially
-    await user.should_see('0')
+    await user.should_see('Count: 0')
+    await user.should_see('Simple Counter')
 
 async def test_counter_increment(user: User) -> None:
-    """Test increment functionality"""
+    """Test increment functionality."""
     await user.open('/')
     
-    # Click the increment button
-    user.find(marker='increment').click()
+    # Click increment button
+    user.find('Increment (+1)').click()
+    await user.should_see('Count: 1')
     
-    # Check that counter increased to 1
-    await user.should_see('1')
+    # Click increment again
+    user.find('Increment (+1)').click()
+    await user.should_see('Count: 2')
 
 async def test_counter_decrement(user: User) -> None:
-    """Test decrement functionality"""
+    """Test decrement functionality."""
     await user.open('/')
     
     # First increment to have a positive number
-    user.find(marker='increment').click()
-    await user.should_see('1')
+    user.find('Increment (+1)').click()
+    await user.should_see('Count: 1')
     
-    # Now click decrement button
-    user.find(marker='decrement').click()
+    # Then decrement
+    user.find('Decrement (-1)').click()
+    await user.should_see('Count: 0')
     
-    # Check that counter is back to 0
-    await user.should_see('0')
+    # Decrement below zero
+    user.find('Decrement (-1)').click()
+    await user.should_see('Count: -1')
 
-async def test_counter_multiple_operations(user: User) -> None:
-    """Test multiple increment and decrement operations"""
+async def test_counter_reset(user: User) -> None:
+    """Test reset functionality."""
     await user.open('/')
     
-    # Increment 3 times
-    for _ in range(3):
-        user.find(marker='increment').click()
+    # Increment a few times
+    user.find('Increment (+1)').click()
+    user.find('Increment (+1)').click()
+    user.find('Increment (+1)').click()
+    await user.should_see('Count: 3')
     
-    # Check value is 3
-    await user.should_see('3')
-    
-    # Decrement 2 times
-    for _ in range(2):
-        user.find(marker='decrement').click()
-    
-    # Check value is 1
-    await user.should_see('1')
+    # Reset counter
+    user.find('Reset').click()
+    await user.should_see('Count: 0')
 
-async def test_counter_negative_values(user: User) -> None:
-    """Test that counter can go negative"""
+async def test_counter_mixed_operations(user: User) -> None:
+    """Test mixed increment/decrement operations."""
     await user.open('/')
     
-    # Click decrement button to go negative
-    user.find(marker='decrement').click()
+    # Perform mixed operations
+    user.find('Increment (+1)').click()  # 1
+    user.find('Increment (+1)').click()  # 2
+    user.find('Decrement (-1)').click()  # 1
+    user.find('Increment (+1)').click()  # 2
+    user.find('Decrement (-1)').click()  # 1
+    user.find('Decrement (-1)').click()  # 0
+    user.find('Decrement (-1)').click()  # -1
     
-    # Check value is -1
-    await user.should_see('-1')
+    await user.should_see('Count: -1')
 
-async def test_counter_ui_elements(user: User) -> None:
-    """Test that all UI elements are present"""
+async def test_counter_buttons_exist(user: User) -> None:
+    """Test that all required buttons are present."""
     await user.open('/')
     
-    # Check title is present
-    await user.should_see('Simple Counter')
-    
-    # Check both buttons are present using markers
-    await user.should_see(marker='increment')
-    await user.should_see(marker='decrement')
-    
-    # Check initial counter value
-    await user.should_see('0')
+    # Check that all buttons exist
+    await user.should_see('Increment (+1)')
+    await user.should_see('Decrement (-1)')
+    await user.should_see('Reset')

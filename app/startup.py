@@ -1,5 +1,5 @@
 from nicegui import Client, ui
-from . import counter
+import app.counter
 
 def startup() -> None:
-    counter.create()
+    app.counter.create()
